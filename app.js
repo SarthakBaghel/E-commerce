@@ -6,11 +6,17 @@ const mongoose = require('mongoose');
 const seedDB = require('./seed')
 const ejsMate = require('ejs-mate')
 const methodOverride = require('method-override')
-const productRoutes = require('./routes/product')
-const reviewRoutes = require('./routes/review')
 const flash = require('connect-flash')
 const session = require('express-session')
+const passport = require('passport')
+const LocalStrategy = require('passport-local')
+const User = require('./models/User')
 
+
+
+const productRoutes = require('./routes/product')
+const reviewRoutes = require('./routes/review')
+const authRoutes = require('./routes/auth')
 
 
 mongoose.connect('mongodb://127.0.0.1:27017/shopping-sart-app')
@@ -30,6 +36,11 @@ let configSession = {              //-> refer express-session doc
     secret: 'keyboard cat',
     resave: false,
     saveUninitialized: true,
+    cookie:{
+        httpOnly:true,
+        expires:Date.now()+24*7*60*60*1000,
+        maxAge: 24*7*60*60*1000
+    }
 }
 
 app.engine('ejs',ejsMate)
@@ -41,16 +52,27 @@ app.use(express.urlencoded({extended:true})) //to send data from form
 app.use(methodOverride('_method'))
 app.use(session(configSession))
 app.use(flash())
+
+app.use(passport.initialize())
+app.use(passport.session())
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
+
 app.use((req,res,next)=>{
+    res.locals.currentUser = req.user
     app.locals.success = req.flash('success')
     app.locals.error = req.flash('error')
     next()
 })
 
+//passport 
+passport.use(new LocalStrategy(User.authenticate()));
 
 
 app.use(productRoutes) //should check path for every incoming request -> use 
 app.use(reviewRoutes)
+app.use(authRoutes)
 
 
 

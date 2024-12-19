@@ -1,7 +1,7 @@
 const express = require('express');
 const Product = require('../models/product');
 const Review = require('../models/Review');
-const {validateProduct} = require('../middleware')
+const {validateProduct,isLoggedIn} = require('../middleware')
 
 const router = express.Router() //mini instance
 
@@ -17,7 +17,7 @@ router.get('/products',async (req,res)=>{
 })
 
 //to show the form for new products
-router.get('/product/new',(req,res)=>{
+router.get('/product/new',isLoggedIn,(req,res)=>{
     try{
         res.render('products/new')
     }
@@ -27,7 +27,7 @@ router.get('/product/new',(req,res)=>{
 })
 
 //to actually add the product
-router.post('/products',validateProduct,async (req,res)=>{
+router.post('/products',validateProduct,isLoggedIn,async (req,res)=>{
     try{
 
         let {name,img,price,desc}= req.body
@@ -45,7 +45,7 @@ router.post('/products',validateProduct,async (req,res)=>{
 
 
 //to actually show a product
-router.get('/products/:id',async(req,res)=>{
+router.get('/products/:id',isLoggedIn,async(req,res)=>{
     try{
 
         let {id} = req.params;    // getting id passed in url from req.params
@@ -59,7 +59,7 @@ router.get('/products/:id',async(req,res)=>{
 })
 
 //to edit a product
-router.get('/products/:id/edit',async (req,res)=>{
+router.get('/products/:id/edit',isLoggedIn,async (req,res)=>{
     try{
         let {id} = req.params;
         let foundProduct = await Product.findById(id);
@@ -71,7 +71,7 @@ router.get('/products/:id/edit',async (req,res)=>{
 })
 
 //to actually update the data 
-router.patch('/product/:id',validateProduct,async(req,res)=>{
+router.patch('/product/:id',validateProduct,isLoggedIn,async(req,res)=>{
     try{
         let {id} = req.params;
         let {name,img,price,desc} = req.body
@@ -86,7 +86,7 @@ router.patch('/product/:id',validateProduct,async(req,res)=>{
 })
 
 //to delete a product
-router.delete('/products/:id',async (req,res)=>{
+router.delete('/products/:id',isLoggedIn,async (req,res)=>{
     try{
         let {id} = req.params
         const product = await Product.findById(id);

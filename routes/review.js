@@ -1,7 +1,7 @@
 const express = require('express');
 const Review = require('../models/Review')
 const Product = require('../models/product')
-const {validateReview} = require('../middleware')
+const {validateReview,isLoggedIn} = require('../middleware')
 
 
 
