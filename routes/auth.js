@@ -11,8 +11,8 @@ router.get('/register',(req,res)=>{
 //actually want to register in db
 router.post('/register',async (req,res)=>{
     try{
-        let {email,password,username} = req.body
-        const user = new User({email,username})
+        let {email,password,username,role} = req.body
+        const user = new User({email,username,role})
         const newUser = await User.register(user,password)
         // res.redirect('/login') //after registering have to login again
         req.login(newUser,function(err){     //no need to login again after registerin direct to products page

@@ -1,7 +1,7 @@
 const express = require('express');
 const Product = require('../models/product');
 const Review = require('../models/Review');
-const {validateProduct,isLoggedIn} = require('../middleware')
+const {validateProduct,isLoggedIn,isSeller,isProductAuthor} = require('../middleware')
 
 const router = express.Router() //mini instance
 
@@ -17,7 +17,7 @@ router.get('/products',async (req,res)=>{
 })
 
 //to show the form for new products
-router.get('/product/new',isLoggedIn,(req,res)=>{
+router.get('/product/new',isLoggedIn,isSeller,(req,res)=>{
     try{
         res.render('products/new')
     }
@@ -27,11 +27,11 @@ router.get('/product/new',isLoggedIn,(req,res)=>{
 })
 
 //to actually add the product
-router.post('/products',validateProduct,isLoggedIn,async (req,res)=>{
+router.post('/products',validateProduct,isLoggedIn,isSeller,async (req,res)=>{
     try{
 
         let {name,img,price,desc}= req.body
-        await Product.create({name,img,price,desc})  //method in mongoose to create new product model.create 
+        await Product.create({name,img,price,desc,author:req.user._id})  //method in mongoose to create new product model.create 
         //it takes time to update so we use async await
         req.flash('success' , 'Product added successfully')
 
@@ -59,7 +59,7 @@ router.get('/products/:id',isLoggedIn,async(req,res)=>{
 })
 
 //to edit a product
-router.get('/products/:id/edit',isLoggedIn,async (req,res)=>{
+router.get('/products/:id/edit',isLoggedIn,isSeller,async (req,res)=>{
     try{
         let {id} = req.params;
         let foundProduct = await Product.findById(id);
@@ -71,7 +71,7 @@ router.get('/products/:id/edit',isLoggedIn,async (req,res)=>{
 })
 
 //to actually update the data 
-router.patch('/product/:id',validateProduct,isLoggedIn,async(req,res)=>{
+router.patch('/product/:id',validateProduct,isLoggedIn,isSeller,async(req,res)=>{
     try{
         let {id} = req.params;
         let {name,img,price,desc} = req.body
@@ -86,13 +86,13 @@ router.patch('/product/:id',validateProduct,isLoggedIn,async(req,res)=>{
 })
 
 //to delete a product
-router.delete('/products/:id',isLoggedIn,async (req,res)=>{
+router.delete('/products/:id',isLoggedIn,isSeller,isProductAuthor,async (req,res)=>{
     try{
         let {id} = req.params
         const product = await Product.findById(id);
         // for(let id of product.reviews){            -> handled in middleware now
         //     await Review.findByIdAndDelete(id)
-        // }
+        // }     
         await Product.findByIdAndDelete(id);  // -> when this will run middleware will run then callbackfunction will run then this id is passed as product in middleware callback function
         req.flash('success' , 'Product deleted successfully')
         res.redirect('/products')
