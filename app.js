@@ -18,6 +18,7 @@ const productRoutes = require('./routes/product')
 const reviewRoutes = require('./routes/review')
 const authRoutes = require('./routes/auth')
 const cartRoutes = require('./routes/cart')
+const productApi = require('./routes/apis/productapi')
 
 
 mongoose.connect('mongodb://127.0.0.1:27017/shopping-sart-app')
@@ -75,6 +76,7 @@ app.use(productRoutes) //should check path for every incoming request -> use
 app.use(reviewRoutes)
 app.use(authRoutes)
 app.use(cartRoutes)
+app.use(productApi)
 
 
 
